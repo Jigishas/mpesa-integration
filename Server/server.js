@@ -81,7 +81,50 @@ app.get('/stkpush', (req, res) => {
     .catch(err => res.status(500).json({ error: 'Failed to get access token' }));
 });
 
+app.post('/stkpush', (req, res) => {
+    const { phoneNumber, amount } = req.body;
+    
+    getAccessToken()
+    .then(access_token => {
+        const Url = 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
+        auth="Bearer " + access_token;
+        var timestamp = moment().format('YYYYMMDDHHmmss');
+        var password = Buffer.from(process.env.BUSINESS_SHORT_CODE + process.env.LIPA_NA_MPESA_ONLINE_PASSKEY + timestamp).toString('base64');
 
+        request(
+            {
+                url: Url,
+                method: "POST",
+                headers: {
+                    "Authorization": auth
+                },
+                json: {
+                    "BusinessShortCode": process.env.BUSINESS_SHORT_CODE,
+                    "Password": password,
+                    "Timestamp": timestamp,
+                    "TransactionType": "CustomerPayBillOnline",
+                    "Amount": amount,
+                    "PartyA": phoneNumber,
+                    "PartyB": process.env.BUSINESS_SHORT_CODE,
+                    "PhoneNumber": phoneNumber,
+                    "CallBackURL": "http://localhost:5000/callback",
+                    "AccountReference": "Dev Jose test",
+                    "TransactionDesc": "Payment of Test"
+                }
+            },
+            function (error, response, body){
+                if(error){
+                    console.error("STK Push Error: ", error);
+                    res.status(500).json({ error: 'STK Push request failed' });
+                } else {
+                    console.log("STK Push Response: ", body);
+                    res.json(body);
+                }
+            }
+        )
+    })
+    .catch(err => res.status(500).json({ error: 'Failed to get access token' }));
+});
 
 function getAccessToken() {
     const consumerKey = process.env.CONSUMER_KEY;
