@@ -5,18 +5,19 @@ function App() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [amount, setAmount] = useState('');
   const [message, setMessage] = useState('');
+  const backendUrl = 'http://localhost:5000/stkpush';
 
   const HandleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:5000/stkpush', {
+      const response = await fetch(backendUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          phoneNumber,
-          amount
+          phoneNumber:phoneNumber,
+          amount:amount
         })
       });
       const data = await response.json();
@@ -28,7 +29,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-lg overflow-hidden">
+      <div className="max-w-md w-full bg-gray-500 rounded-lg shadow-lg overflow-hidden">
         <div className="bg-green-600 text-white p-6">
           <h1 className="text-2xl font-bold text-center">Mpesa Integration Client</h1>
         </div>
@@ -42,7 +43,7 @@ function App() {
               name="phone number"
               id="phone number"
               placeholder="2547XXXXXXXX"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
               required
@@ -72,7 +73,7 @@ function App() {
         </form>
         {message && (
           <div className="p-6 border-t border-gray-200">
-            <pre className="bg-gray-100 p-4 rounded-md text-sm overflow-x-auto">{message}</pre>
+            <pre className="bg-gray-600 p-4 rounded-md text-sm overflow-x-auto">{message}</pre>
           </div>
         )}
       </div>

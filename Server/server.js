@@ -5,12 +5,19 @@ const http = require('http');
 const request = require('request');
 const moment = require('moment');
 require('dotenv').config();
+const {Buffer} = require('buffer');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 const hostname = 'localhost';
 
-app.use(cors());
+
+app.use(cors({
+    origin: ['http://localhost:3000', 'http://localhost:5000', 'http://localhost:5173'],
+    Credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -45,7 +52,7 @@ app.get('/stkpush', (req, res) => {
         auth="Bearer " + access_token;
         var timestamp = moment().format('YYYYMMDDHHmmss');
         var password = Buffer.from(process.env.BUSINESS_SHORT_CODE + process.env.PASSKEY + timestamp).toString('base64');
-
+        console.log({password}, timestamp);
         request(
             {
                 url: Url,
@@ -58,10 +65,10 @@ app.get('/stkpush', (req, res) => {
                     "Password": password,
                     "Timestamp": timestamp,
                     "TransactionType": "CustomerPayBillOnline",
-                    "Amount": "1",
+                    "Amount": '',
                     "PartyA": "254708374149",
                     "PartyB": process.env.BUSINESS_SHORT_CODE,
-                    "PhoneNumber": "254743121169",
+                    "PhoneNumber": '',
                     "CallBackURL": "http://localhost:5000/callback",
                     "AccountReference": "Dev Jose test",
                     "TransactionDesc": "Payment of Test"
@@ -89,7 +96,8 @@ app.post('/stkpush', (req, res) => {
         const Url = 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
         auth="Bearer " + access_token;
         var timestamp = moment().format('YYYYMMDDHHmmss');
-        var password = Buffer.from(process.env.BUSINESS_SHORT_CODE + process.env.LIPA_NA_MPESA_ONLINE_PASSKEY + timestamp).toString('base64');
+        var password = Buffer.from(process.env.BUSINESS_SHORT_CODE + process.env.PASSKEY + timestamp).toString('base64');
+       
 
         request(
             {
@@ -154,8 +162,15 @@ function getAccessToken() {
     });
 }
 
+app.post('/callback', (req, res) => {
+    // Handle Mpesa callback here
+    console.log('Callback received:', req.body);
+    res.status(200).json({ message: 'Callback received' });
+});
+
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
+     
 });
 
